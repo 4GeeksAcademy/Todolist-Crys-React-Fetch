@@ -2,32 +2,31 @@ import React, { useState } from "react";
 import Button from "./Button";
 
 export default function Input({ onAdd }) {
-
   // -----------------------------
   // Estado local del input
   // -----------------------------
-  // Guarda lo que el usuario escribe.
-  // Este estado NO es global, solo afecta a este componente.
+  // Guarda lo que el usuario escribe
+  // Este estado es solo para este componente, no afecta globalmente
   const [valor, setValor] = useState("");
 
   // -----------------------------
   // Función para agregar tarea
   // -----------------------------
-  // 1. Valida que el texto no esté vacío
+  // 1. Valida que no esté vacío
   // 2. Llama a la función del padre (Home)
   // 3. Limpia el input
   const handleAdd = () => {
-    if (valor.trim() !== "") {   // trim() evita espacios antes/después
-      onAdd(valor);              // delega la acción al componente padre
-      setValor("");              // resetea el input (UX limpia)
+    if (valor.trim() !== "") {
+      onAdd(valor);
+      setValor(""); // Resetea el input para UX limpia
     }
   };
 
   // -----------------------------
   // Manejo del teclado (Enter)
   // -----------------------------
-  // Reutiliza EXACTAMENTE el mismo flujo que el botón
-  // No duplicamos lógica (buena práctica)
+  // Reutiliza la misma lógica del botón
+  // Evita duplicar código
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && valor.trim() !== "") {
       onAdd(valor);
@@ -37,11 +36,7 @@ export default function Input({ onAdd }) {
 
   return (
     <div className="contenedor-input">
-
-      {/* Input controlado:
-          - value viene del estado
-          - onChange actualiza el estado
-          React siempre tiene el control del valor */}
+      {/* Input controlado */}
       <input
         type="text"
         placeholder="Escribe aquí tu tarea"
@@ -50,13 +45,10 @@ export default function Input({ onAdd }) {
         onKeyDown={handleKeyDown}
       />
 
-      {/* Botón reutilizable
-          - No sabe qué hace onAdd
-          - Solo ejecuta la acción cuando se hace click */}
+      {/* Botón reutilizable */}
       <Button onClick={handleAdd}>
         Agregar <i className="bi bi-file-earmark-plus"></i>
       </Button>
-
     </div>
   );
 }

@@ -1,201 +1,146 @@
 import React, { useState, useEffect } from "react";
-
-// Importamos los componentes hijos
 import Header from "./Header";
 import Input from "./Input";
 import TaskList from "./TaskList";
 import Footer from "./Footer";
+import Button from "./Button";
 
 // -----------------------------
 // URL base de la API
 // -----------------------------
-// Reemplazamos 'tuUsuario' por 'todolist-crys'
-// Esta URL será el "espacio de almacenamiento" de tus tareas en la API
+// Usuario específico para guardar tareas
 const API_URL = "https://playground.4geeks.com/todo/todos/todolist-crys";
 
-const Home = () => {
+export default function Home() {
+  // -----------------------------
+  // Estado global
+  // -----------------------------
+  const [tema, setTema] = useState("light"); // Tema dark/light
+  const [tareas, setTareas] = useState([]); // Lista de tareas desde API
 
   // -----------------------------
-  // Estado del tema Dark/Light
+  // Alternar tema
   // -----------------------------
-  // useState permite mantener un estado local en React
-  const [tema, setTema] = useState("light");
-
-  // Función para alternar tema
-  const toggleTema = () => {
-    // prev es el valor anterior del estado
-    // Operador ternario: si era light pasa a dark, si era dark pasa a light
-    setTema(prev => (prev === "light" ? "dark" : "light"));
-  };
+  const toggleTema = () => setTema(prev => (prev === "light" ? "dark" : "light"));
 
   // -----------------------------
-  // useEffect para aplicar el tema al body
+  // Aplicar clase al body
   // -----------------------------
   useEffect(() => {
     document.body.className = "";       // Limpiamos clases anteriores
-    document.body.classList.add(tema);  // Agregamos la clase actual del tema
-    // [] → se ejecutaría solo al montar, [tema] → se ejecuta cada vez que tema cambia
+    document.body.classList.add(tema);  // Añadimos clase actual
   }, [tema]);
-
-  // -----------------------------
-  // Estado de las tareas
-  // -----------------------------
-  // Inicialmente vacío, luego lo llenaremos desde la API
-  const [tareas, setTareas] = useState([]);
 
   // -----------------------------
   // Función para cargar tareas desde la API
   // -----------------------------
   const cargarTareas = async () => {
     try {
-      // Fetch GET por defecto, devuelve las tareas en JSON
       const resp = await fetch(API_URL);
-      const data = await resp.json();    // Parseamos la respuesta a objeto JS
-      setTareas(data);                   // Actualizamos el estado local de React
+      if (!resp.ok) throw new Error(`Error al cargar tareas: ${resp.status}`);
+      const data = await resp.json();
+      setTareas(Array.isArray(data) ? data : []); // Validación de array
     } catch (error) {
-      console.error("Error al cargar tareas:", error);
+      console.error(error);
     }
   };
 
   // -----------------------------
-  // useEffect para cargar tareas al montar el componente
+  // Cargar tareas al montar el componente
   // -----------------------------
   useEffect(() => {
     cargarTareas();
-  }, []); // Array vacío → se ejecuta solo al montar el componente
+  }, []);
 
   // -----------------------------
-  // Función para agregar tarea
+  // Agregar tarea
   // -----------------------------
   const agregarTarea = async (texto) => {
-    // La API espera la propiedad 'label' y 'done'
-    const nueva = {
-      label: texto,
-      done: false
-    };
-
+    const nueva = { label: texto, done: false };
     try {
-      // Enviamos POST a la API
       const resp = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=UTF-8" // Importante para que la API interprete JSON
-        },
-        body: JSON.stringify(nueva) // Convertimos objeto JS a JSON
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(nueva)
       });
-
       if (!resp.ok) throw new Error(`Error al agregar tarea: ${resp.status}`);
-
-      // Actualizamos la lista local con la información más reciente
-      await cargarTareas();
-
+      await cargarTareas(); // Refresca la lista
     } catch (error) {
       console.error(error);
     }
   };
 
   // -----------------------------
-  // Función para borrar tarea
+  // Borrar tarea
   // -----------------------------
   const borrarTarea = async (id) => {
     try {
-      // DELETE hacia la tarea específica por su id
-      const resp = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE"
-      });
-
+      const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (!resp.ok) throw new Error(`Error al borrar tarea: ${resp.status}`);
-
-      // Actualizamos lista local
       await cargarTareas();
-
     } catch (error) {
       console.error(error);
     }
   };
 
   // -----------------------------
-  // Función para marcar tarea completada
+  // Marcar o desmarcar completada
   // -----------------------------
   const toggleTarea = async (id) => {
-    // Buscamos la tarea que queremos actualizar
     const tarea = tareas.find(t => t.id === id);
-    if (!tarea) return; // Si no existe, salimos
+    if (!tarea) return;
 
     try {
-      // PUT para actualizar la tarea
       const resp = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json; charset=UTF-8"
-        },
-        // Cambiamos 'done' al valor contrario
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
         body: JSON.stringify({ ...tarea, done: !tarea.done })
       });
-
       if (!resp.ok) throw new Error(`Error al actualizar tarea: ${resp.status}`);
-
-      // Sincronizamos la lista
       await cargarTareas();
-
     } catch (error) {
       console.error(error);
     }
   };
 
   // -----------------------------
-  // Función para limpiar todas las tareas
+  // Limpiar todas las tareas
   // -----------------------------
   const limpiarTareas = async () => {
     try {
-      // Borramos todas las tareas usando Promise.all para hacer las requests en paralelo
       await Promise.all(
         tareas.map(t => fetch(`${API_URL}/${t.id}`, { method: "DELETE" }))
       );
-
-      // Actualizamos estado local
-      setTareas([]);
-
+      setTareas([]); // Refresca la lista
     } catch (error) {
-      console.error("Error al limpiar tareas:", error);
+      console.error(error);
     }
   };
 
   // -----------------------------
-  // Renderizado de la UI
+  // Renderizado
   // -----------------------------
   return (
     <div className="justify-content">
+      <Header tema={tema} toggleTema={toggleTema} />
 
-        {/* Header */}
-        <Header tema={tema} toggleTema={toggleTema} />
-
-        {/* Contenedor principal */}
-        <div className="contenedor-principal">
-
-            {/* Sección del input para agregar tareas nueva */}
-            <div className="contenedor-input">
-                <Input onAdd={agregarTarea} />
-                <button onClick={limpiarTareas}>Limpiar todas las tareas</button>
-            </div>
-
-            {/* Sección de la lista de tareas */}
-            <div className="contenedor-lista">
-                <TaskList
-                    tareas={tareas}
-                    onDelete={borrarTarea}
-                    onToggle={toggleTarea}
-                />
-            </div>
-
-			{/* Sección de Footer */}
-            <div className="contenedor-footer">
-                <Footer/>
-            </div>
-
+      <div className="contenedor-principal">
+        <div className="contenedor-input">
+          <Input onAdd={agregarTarea} />
+          {/* Botón para limpiar todas las tareas */}
+          <Button onClick={limpiarTareas} className="btn-limpiar">
+            Limpiar todas las tareas
+          </Button>
         </div>
+
+        <div className="contenedor-lista">
+          <TaskList tareas={tareas} onDelete={borrarTarea} onToggle={toggleTarea} />
+        </div>
+
+        <div className="contenedor-footer">
+          <Footer />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Home;
+}

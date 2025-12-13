@@ -7,14 +7,12 @@ export default function TaskItem({ tarea, onDelete, onToggle }) {
     // Clase dinámica según estado
     // -----------------------------
     // Si tarea.done es true, se añade la clase "completada"
-    // Esto permite cambiar estilos SOLO con CSS
     <div className={`task-item ${tarea.done ? "completada" : ""}`}>
       
       {/* 
         Checkbox controlado
         - checked depende del estado de la tarea (done)
-        - onChange notifica al padre qué tarea se quiere actualizar
-        - TaskItem NO cambia el estado, solo avisa
+        - onChange notifica al padre qué tarea cambiar
       */}
       <input
         type="checkbox"
@@ -22,18 +20,10 @@ export default function TaskItem({ tarea, onDelete, onToggle }) {
         onChange={() => onToggle(tarea.id)}
       />
 
-      {/* 
-        Texto de la tarea
-        - label viene directamente de la API
-        - TaskItem solo renderiza, no transforma datos
-      */}
+      {/* Texto de la tarea */}
       <span>{tarea.label}</span>
 
-      {/* 
-        Botón eliminar
-        - Reutiliza el componente Button
-        - onClick ejecuta la función del padre
-      */}
+      {/* Botón eliminar */}
       <Button className="btn-eliminar" onClick={() => onDelete(tarea.id)}>
         ×
       </Button>
