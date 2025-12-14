@@ -122,6 +122,7 @@ header button i.bi-moon-fill {
     gap: 0.6rem;
     /* separación entre input y botón */
     margin-bottom: 1rem;
+    
 }
 
 
@@ -160,6 +161,7 @@ header button i.bi-moon-fill {
     transition: all 0.3s ease;
     box-shadow: 0 0 8px var(--border-color);
 }
+
 
 .contenedor-input button:hover {
     transform: scale(1.05);
