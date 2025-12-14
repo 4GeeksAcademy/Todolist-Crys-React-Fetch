@@ -114,15 +114,17 @@ header button i.bi-moon-fill {
 }
 
 /* ==========================
-   Input y botón Agregar
+   Input y botón Agregar, añadido tambien boton limpiar 
 ========================== */
-.contenedor-input {
+.contenedor-input, .btn-limpiar{
     display: flex;
     justify-content: center;
     gap: 0.6rem;
     /* separación entre input y botón */
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
+
+
 
 .contenedor-input input {
     flex: 1;
@@ -164,6 +166,20 @@ header button i.bi-moon-fill {
     box-shadow: 0 0 12px var(--border-color), 0 0 8px var(--primary-color);
 }
 
+/* Botón agregar */
+.btn-agregar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px var(--border-color), 0 0 8px var(--primary-color);
+    background-color: rgba(25, 237, 25, 0.877);
+}
+
+/* Botón limpiar */
+.btn-limpiar:hover {
+    background-color: rgba(255, 0, 0, 0.877);
+    color: aliceblue;
+}
+
+}
 /* ==========================
    TaskList
 ========================== */
@@ -357,22 +373,4 @@ footer.footer a {
 }
 
 
-/*Boton nuevo LIMPIARTODO */
 
-.btn-limpiar {
-    background-color: #ff4d4f;
-    /* rojo */
-    color: white;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-left: 1rem;
-    /* separa del input */
-    transition: all 0.3s ease;
-    box-shadow: 0 0 8px var(--border-color);
-}
-
-.btn-limpiar:hover {
-    background-color: #ff7875;
-}

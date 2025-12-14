@@ -7,7 +7,7 @@ export default function TaskItem({ tarea, onDelete, onToggle }) {
     // Clase dinámica según estado
     // -----------------------------
     // Si tarea.done es true, se añade la clase "completada"
-    <div className={`task-item ${tarea.done ? "completada" : ""}`}>
+    <div className={`task-item ${tarea.is_done ? "completada" : ""}`}>
       
       {/* 
         Checkbox controlado
@@ -16,7 +16,7 @@ export default function TaskItem({ tarea, onDelete, onToggle }) {
       */}
       <input
         type="checkbox"
-        checked={tarea.done}
+        checked={tarea.is_done}
         onChange={() => onToggle(tarea.id)}
       />
 

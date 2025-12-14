@@ -194,7 +194,7 @@ export default function Home() {
         <div className="contenedor-input">
           <Input onAdd={agregarTarea} />
           <Button onClick={limpiarTareas} className="btn-limpiar">
-            Borrar Tareas
+            Borrar Tareas <i class="bi bi-file-earmark-minus"></i>
           </Button>
         </div>
 

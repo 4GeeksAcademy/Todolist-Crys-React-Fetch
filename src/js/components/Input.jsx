@@ -46,7 +46,7 @@ export default function Input({ onAdd }) {
       />
 
       {/* Botón reutilizable */}
-      <Button onClick={handleAdd}>
+      <Button onClick={handleAdd} className={"btn-agregar"}>
         Agregar <i className="bi bi-file-earmark-plus"></i>
       </Button>
     </div>
