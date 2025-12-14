@@ -62,8 +62,9 @@ header {
     padding: 1rem;
     border-bottom: 2px solid var(--border-color);
     margin-bottom: 1rem;
-    gap: 2rem; 
-     position: relative;     /* <-- para que ::after quede dentro del header */
+    gap: 2rem;
+    position: relative;
+    /* <-- para que ::after quede dentro del header */
 
 }
 
@@ -102,13 +103,16 @@ header button:hover {
 
 
 header button i.bi-sun-fill {
-    color: #014f86; /* azul oscuro más profundo */
+    color: #014f86;
+    /* azul oscuro más profundo */
     transition: all 0.3s ease;
 }
 
 header button i.bi-moon-fill {
-    color: #81d4fa; /* azul claro en dark */
+    color: #81d4fa;
+    /* azul claro en dark */
 }
+
 /* ==========================
    Input y botón Agregar
 ========================== */
@@ -346,8 +350,9 @@ footer.footer code {
     border: 1px solid var(--border-color);
     box-shadow: 0 0 5px var(--border-color);
 }
+
 footer.footer a {
-    color: rgb(12, 103, 12); 
+    color: rgb(12, 103, 12);
     /* ... */
 }
 
@@ -355,15 +360,19 @@ footer.footer a {
 /*Boton nuevo LIMPIARTODO */
 
 .btn-limpiar {
-  background-color: #ff4d4f; /* rojo */
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-left: 1rem; /* separa del input */
+    background-color: #ff4d4f;
+    /* rojo */
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: 1rem;
+    /* separa del input */
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px var(--border-color);
 }
 
 .btn-limpiar:hover {
-  background-color: #ff7875;
+    background-color: #ff7875;
 }

@@ -5,136 +5,212 @@ import TaskList from "./TaskList";
 import Footer from "./Footer";
 import Button from "./Button";
 
-// -----------------------------
-// URL base de la API
-// -----------------------------
-// Usuario específico para guardar tareas
-const API_URL = "https://playground.4geeks.com/todo/todos/todolist-crys";
-
 export default function Home() {
   // -----------------------------
-  // Estado global
+  // 1. CONSTANTES Y CONFIGURACIÓN
   // -----------------------------
-  const [tema, setTema] = useState("light"); // Tema dark/light
-  const [tareas, setTareas] = useState([]); // Lista de tareas desde API
+  const USERNAME = "todolist_crys2";
+  const BASE_URL = "https://playground.4geeks.com/todo";
+
+  // Estas son las tareas que se cargarán si el usuario es nuevo
+  const TAREAS_INICIALES = [
+    "Pasear al perro",
+    "Tratar de conquistar el Fetch",
+    "Rezar para que renderice",
+    "No morir en el intento"
+  ];
+  
+  // -----------------------------
+  // 2. ESTADOS
+  // -----------------------------
+  const [tareas, setTareas] = useState([]); 
+  const [tema, setTema] = useState("light");
 
   // -----------------------------
-  // Alternar tema
+  // 3. EFECTOS (Ciclo de vida)
   // -----------------------------
-  const toggleTema = () => setTema(prev => (prev === "light" ? "dark" : "light"));
 
-  // -----------------------------
-  // Aplicar clase al body
-  // -----------------------------
-  useEffect(() => {
-    document.body.className = "";       // Limpiamos clases anteriores
-    document.body.classList.add(tema);  // Añadimos clase actual
-  }, [tema]);
-
-  // -----------------------------
-  // Función para cargar tareas desde la API
-  // -----------------------------
-  const cargarTareas = async () => {
-    try {
-      const resp = await fetch(API_URL);
-      if (!resp.ok) throw new Error(`Error al cargar tareas: ${resp.status}`);
-      const data = await resp.json();
-      setTareas(Array.isArray(data) ? data : []); // Validación de array
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // -----------------------------
   // Cargar tareas al montar el componente
-  // -----------------------------
   useEffect(() => {
     cargarTareas();
   }, []);
 
+  // Gestionar el tema Dark/Light
+  useEffect(() => {
+    document.body.className = "";
+    document.body.classList.add(tema);
+  }, [tema]);
+
+  const toggleTema = () => setTema(prev => (prev === "light" ? "dark" : "light"));
+
   // -----------------------------
-  // Agregar tarea
+  // 4. FUNCIONES DE LA API
   // -----------------------------
-  const agregarTarea = async (texto) => {
-    const nueva = { label: texto, done: false };
+
+  /**
+   * CONSULTAR TAREAS
+   * Intenta leer el usuario. Si da error 404, inicia el proceso de creación.
+   */
+  const cargarTareas = async () => {
     try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=UTF-8" },
-        body: JSON.stringify(nueva)
-      });
-      if (!resp.ok) throw new Error(`Error al agregar tarea: ${resp.status}`);
-      await cargarTareas(); // Refresca la lista
+      const response = await fetch(`${BASE_URL}/users/${USERNAME}`);
+      
+      if (response.status === 404) {
+        console.warn("Usuario no encontrado. Iniciando creación...");
+        await crearUsuario();
+        return;
+      }
+
+      const data = await response.json();
+      // Asignamos el array 'todos' que viene dentro del objeto usuario
+      setTareas(data.todos); 
+
     } catch (error) {
-      console.error(error);
+      console.error("Error cargando tareas:", error);
     }
   };
 
-  // -----------------------------
-  // Borrar tarea
-  // -----------------------------
+  /**
+   * CREAR USUARIO
+   * Se llama solo si el usuario no existe.
+   */
+  const crearUsuario = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/users/${USERNAME}`, {
+        method: "POST"
+      });
+      
+      if (response.ok) {
+        console.log("Usuario creado con éxito. Insertando tareas por defecto...");
+        // AQUÍ ESTÁ LA CLAVE: Insertamos las tareas base antes de mostrar nada
+        await insertarTareasPorDefecto();
+        // Una vez insertadas, recargamos para mostrarlas
+        await cargarTareas(); 
+      }
+    } catch (error) {
+      console.error("Error creando usuario:", error);
+    }
+  };
+
+  /**
+   * INSERTAR TAREAS POR DEFECTO (SEMILLA)
+   * Recorre tu lista de tareas iniciales y las envía todas a la vez.
+   */
+  const insertarTareasPorDefecto = async () => {
+    // Creamos un array de "promesas" (peticiones pendientes)
+    const promesas = TAREAS_INICIALES.map(texto => 
+      fetch(`${BASE_URL}/todos/${USERNAME}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: texto,
+          is_done: false
+        })
+      })
+    );
+    
+    // Promise.all espera a que TODAS se guarden antes de continuar.
+    // Esto evita que carguemos la lista a medias.
+    await Promise.all(promesas);
+  };
+
+  /**
+   * AGREGAR UNA TAREA
+   */
+  const agregarTarea = async (texto) => {
+    const nuevaTarea = { label: texto, is_done: false };
+    try {
+      const response = await fetch(`${BASE_URL}/todos/${USERNAME}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevaTarea)
+      });
+      if (response.ok) await cargarTareas();
+    } catch (error) {
+      console.error("Error agregando tarea:", error);
+    }
+  };
+
+  /**
+   * BORRAR UNA TAREA
+   */
   const borrarTarea = async (id) => {
     try {
-      const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!resp.ok) throw new Error(`Error al borrar tarea: ${resp.status}`);
-      await cargarTareas();
+      const response = await fetch(`${BASE_URL}/todos/${id}`, {
+        method: "DELETE"
+      });
+      if (response.ok) await cargarTareas();
     } catch (error) {
-      console.error(error);
+      console.error("Error borrando tarea:", error);
     }
   };
 
-  // -----------------------------
-  // Marcar o desmarcar completada
-  // -----------------------------
+  /**
+   * MARCAR COMO COMPLETADA/PENDIENTE
+   */
   const toggleTarea = async (id) => {
     const tarea = tareas.find(t => t.id === id);
     if (!tarea) return;
 
+    // Invertimos el valor de is_done
+    const payload = { label: tarea.label, is_done: !tarea.is_done };
+
     try {
-      const resp = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${BASE_URL}/todos/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json; charset=UTF-8" },
-        body: JSON.stringify({ ...tarea, done: !tarea.done })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
-      if (!resp.ok) throw new Error(`Error al actualizar tarea: ${resp.status}`);
-      await cargarTareas();
+      if (response.ok) await cargarTareas();
     } catch (error) {
-      console.error(error);
+      console.error("Error actualizando tarea:", error);
     }
   };
 
-  // -----------------------------
-  // Limpiar todas las tareas
-  // -----------------------------
+  /**
+   * LIMPIAR TODA LA LISTA
+   */
   const limpiarTareas = async () => {
     try {
-      await Promise.all(
-        tareas.map(t => fetch(`${API_URL}/${t.id}`, { method: "DELETE" }))
+      const promesas = tareas.map(t => 
+        fetch(`${BASE_URL}/todos/${t.id}`, { method: "DELETE" })
       );
-      setTareas([]); // Refresca la lista
+      await Promise.all(promesas);
+      await cargarTareas();
     } catch (error) {
-      console.error(error);
+      console.error("Error limpiando tareas:", error);
     }
   };
 
   // -----------------------------
-  // Renderizado
+  // 5. RENDERIZADO
   // -----------------------------
   return (
     <div className="justify-content">
       <Header tema={tema} toggleTema={toggleTema} />
 
       <div className="contenedor-principal">
+        
         <div className="contenedor-input">
           <Input onAdd={agregarTarea} />
-          {/* Botón para limpiar todas las tareas */}
           <Button onClick={limpiarTareas} className="btn-limpiar">
-            Limpiar todas las tareas
+            Borrar Tareas
           </Button>
         </div>
 
         <div className="contenedor-lista">
-          <TaskList tareas={tareas} onDelete={borrarTarea} onToggle={toggleTarea} />
+          {/* Renderizado condicional seguro */}
+          {Array.isArray(tareas) && tareas.length > 0 ? (
+            <TaskList 
+              tareas={tareas} 
+              onDelete={borrarTarea} 
+              onToggle={toggleTarea} 
+            />
+          ) : (
+            <div className="texto-vacio">
+              No hay tareas (o se están cargando...)
+            </div>
+          )}
         </div>
 
         <div className="contenedor-footer">
