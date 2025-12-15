@@ -30,14 +30,7 @@ export default function Header({ tema, toggleTema, currentTime }) {
 
 
     return (
-        <header
-            style={{
-                display: "flex",           
-                justifyContent: "space-between", 
-                alignItems: "center",      
-                padding: "1rem",           
-            }}
-        >
+        <header>
             {/* Título de la app (Importado) */}
             <Titulo />
 

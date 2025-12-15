@@ -6,37 +6,36 @@ import Footer from "./Footer";
 import Button from "./Button";
 
 export default function Home() {
-    // -----------------------------
-    // 1. CONSTANTES Y CONFIGURACIÓN
-    // -----------------------------
+
+    // CONSTANTES Y CONFIGURACIÓN (USERNAME + URL TODO API 4GEEKS)
+
     const USERNAME = "todolist_crys2";
     const BASE_URL = "https://playground.4geeks.com/todo";
 
-    // Estas son las tareas que se cargarán si el usuario es nuevo
+    // Tareas predeterminadas que se le cargan a los usuarios nuevos
+
     const TAREAS_INICIALES = [
         "Pasear al perro",
         "Tratar de conquistar el Fetch",
         "Rezar para que renderice",
-        "No morir en el intento"
+        "Ver Dragon Ball Daima"
     ];
-    
-    // -----------------------------
-    // 2. ESTADOS
-    // -----------------------------
-    const [tareas, setTareas] = useState([]); 
+
+
+    // ESTADOS, light por efecto y estado de tarea (la que se agrega se enlista de primera )
+
+
+    const [tareas, setTareas] = useState([]);
     const [tema, setTema] = useState("light");
-    
-    // 🔥 INICIO DE CAMBIO PARA HORA Y FECHA 🔥
-    // Nuevo estado para almacenar el objeto Date, inicializado con la hora actual
-    // HERRAMIENTA: useState (React Hook) | POR QUÉ: Almacenar la hora y forzar el renderizado
+
+    // Probando el newDate con  el useState para almacenar la hora y forzar el renderizado 
+
     const [dateTime, setDateTime] = useState(new Date());
-    // 🔥 FIN DE CAMBIO 🔥
 
-    // -----------------------------
-    // 3. EFECTOS (Ciclo de vida)
-    // -----------------------------
 
-    // Cargar tareas al montar el componente
+    //useEffect
+
+    // Carga de tareas al montar el compononente
     useEffect(() => {
         cargarTareas();
     }, []);
@@ -47,36 +46,31 @@ export default function Home() {
         document.body.classList.add(tema);
     }, [tema]);
 
-    // 🔥 INICIO DE CAMBIO PARA HORA Y FECHA 🔥
-    // Efecto que se ejecuta solo una vez al montar y establece un intervalo.
-    // HERRAMIENTA: useEffect (React Hook) + setInterval (JavaScript)
-    // POR QUÉ: setInterval permite ejecutar setDateTime(new Date()) cada 1000ms (1 segundo).
+    // UseEffect con setInterval - ejecucion e intervalo (cada 1segundo)
+
     useEffect(() => {
         const timerID = setInterval(() => {
             setDateTime(new Date());
         }, 1000);
 
-        // Limpieza: importante para detener el reloj cuando el componente se desmonta.
+        // Return para detener el reloj cuando el componente se desmonta 
         return function cleanup() {
             clearInterval(timerID);
         };
-    }, []); 
-    // 🔥 FIN DE CAMBIO 🔥
+    }, []);
 
     const toggleTema = () => setTema(prev => (prev === "light" ? "dark" : "light"));
 
-    // -----------------------------
-    // 4. FUNCIONES DE LA API
-    // -----------------------------
 
-    /**
-     * CONSULTAR TAREAS
-     * Intenta leer el usuario. Si da error 404, inicia el proceso de creación.
-     */
+
+    // 4. FUNCIONES DE LA API
+
+    // Constante para creacion automatica del usuario si salta error 404
+
     const cargarTareas = async () => {
         try {
             const response = await fetch(`${BASE_URL}/users/${USERNAME}`);
-            
+
             if (response.status === 404) {
                 console.warn("Usuario no encontrado. Iniciando creación...");
                 await crearUsuario();
@@ -84,50 +78,41 @@ export default function Home() {
             }
 
             const data = await response.json();
-            
-            // Asignamos el array 'todos' que viene dentro del objeto usuario
-            // setTareas(data.todos); // Línea original, comentada por si la quieres conservar
-            
-            // Invertimos el array para que la tarea más nueva quede arriba
+
+
+            // Array invertido para que las nuevas tareas queden de primeras
             const tareasInvertidas = data.todos.slice().reverse();
 
-            // Asignamos el array 'todos' que viene dentro del objeto usuario
-            setTareas(tareasInvertidas); // <-- USAMOS EL ARRAY INVERTIDO
+            setTareas(tareasInvertidas);
 
         } catch (error) {
-            console.error("Error cargando tareas:", error);
+            // Error controlado, este punto es sensible
+
         }
     };
 
-    /**
-     * CREAR USUARIO
-     * Se llama solo si el usuario no existe.
-     */
+    // crear el usuario con metodo post, sino existe este lo llama 
+
     const crearUsuario = async () => {
         try {
             const response = await fetch(`${BASE_URL}/users/${USERNAME}`, {
                 method: "POST"
             });
-            
+
             if (response.ok) {
-                console.log("Usuario creado con éxito. Insertando tareas por defecto...");
-                // AQUÍ ESTÁ LA CLAVE: Insertamos las tareas base antes de mostrar nada
+
                 await insertarTareasPorDefecto();
-                // Una vez insertadas, recargamos para mostrarlas
-                await cargarTareas(); 
+
+                await cargarTareas();
             }
         } catch (error) {
-            console.error("Error creando usuario:", error);
+            // Error controlado: dependencia externa (API)
         }
     };
 
-    /**
-     * INSERTAR TAREAS POR DEFECTO (SEMILLA)
-     * Recorre tu lista de tareas iniciales y las envía todas a la vez.
-     */
+    //INSERTAR TAREAS POR DEFECTO (SEMILLA)
     const insertarTareasPorDefecto = async () => {
-        // Creamos un array de "promesas" (peticiones pendientes)
-        const promesas = TAREAS_INICIALES.map(texto => 
+        const promesas = TAREAS_INICIALES.map(texto =>
             fetch(`${BASE_URL}/todos/${USERNAME}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -137,14 +122,12 @@ export default function Home() {
                 })
             })
         );
-        
+
         // Promise.all espera a que TODAS se guarden antes de continuar.
         await Promise.all(promesas);
     };
 
-    /**
-     * AGREGAR UNA TAREA
-     */
+    //Seccion Agregar tarea
     const agregarTarea = async (texto) => {
         const nuevaTarea = { label: texto, is_done: false };
         try {
@@ -155,7 +138,7 @@ export default function Home() {
             });
             if (response.ok) await cargarTareas();
         } catch (error) {
-            console.error("Error agregando tarea:", error);
+            // Error controlado: fallo de red o API externa
         }
     };
 
@@ -169,18 +152,16 @@ export default function Home() {
             });
             if (response.ok) await cargarTareas();
         } catch (error) {
-            console.error("Error borrando tarea:", error);
+            // Error controlado: fallo de red o API externa
         }
     };
 
-    /**
-     * MARCAR COMO COMPLETADA/PENDIENTE
-     */
+    //Marcar completada
     const toggleTarea = async (id) => {
         const tarea = tareas.find(t => t.id === id);
         if (!tarea) return;
 
-        // Invertimos el valor de is_done
+        
         const payload = { label: tarea.label, is_done: !tarea.is_done };
 
         try {
@@ -191,22 +172,20 @@ export default function Home() {
             });
             if (response.ok) await cargarTareas();
         } catch (error) {
-            console.error("Error actualizando tarea:", error);
+          // Error controlado: fallo de red o API externa
         }
     };
 
-    /**
-     * LIMPIAR TODA LA LISTA
-     */
+    //Limpiar toda la lista
     const limpiarTareas = async () => {
         try {
-            const promesas = tareas.map(t => 
+            const promesas = tareas.map(t =>
                 fetch(`${BASE_URL}/todos/${t.id}`, { method: "DELETE" })
             );
             await Promise.all(promesas);
             await cargarTareas();
         } catch (error) {
-            console.error("Error limpiando tareas:", error);
+            // Error controlado: fallo de red o API externa
         }
     };
 
@@ -215,16 +194,16 @@ export default function Home() {
     // -----------------------------
     return (
         <div className="justify-content">
-            {/* 🔥 CAMBIO AQUÍ: Pasamos el estado de la hora al Header */}
-            <Header 
-                tema={tema} 
-                toggleTema={toggleTema} 
-                currentTime={dateTime} // NUEVA PROP con el objeto Date actualizado
+            
+            <Header
+                tema={tema}
+                toggleTema={toggleTema}
+                currentTime={dateTime} 
             />
-            {/* 🔥 FIN DE CAMBIO */}
+         
 
             <div className="contenedor-principal">
-                
+
                 <div className="contenedor-input">
                     <Input onAdd={agregarTarea} />
                     <Button onClick={limpiarTareas} className="btn-limpiar">
@@ -233,12 +212,12 @@ export default function Home() {
                 </div>
 
                 <div className="contenedor-lista">
-                    {/* Renderizado condicional seguro */}
+                    
                     {Array.isArray(tareas) && tareas.length > 0 ? (
-                        <TaskList 
-                            tareas={tareas} 
-                            onDelete={borrarTarea} 
-                            onToggle={toggleTarea} 
+                        <TaskList
+                            tareas={tareas}
+                            onDelete={borrarTarea}
+                            onToggle={toggleTarea}
                         />
                     ) : (
                         <div className="texto-vacio">
