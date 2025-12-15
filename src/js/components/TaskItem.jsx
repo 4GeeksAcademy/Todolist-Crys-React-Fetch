@@ -3,17 +3,10 @@ import Button from "./Button";
 
 export default function TaskItem({ tarea, onDelete, onToggle }) {
   return (
-    // -----------------------------
-    // Clase dinámica según estado
-    // -----------------------------
-    // Si tarea.done es true, se añade la clase "completada"
+    
     <div className={`task-item ${tarea.is_done ? "completada" : ""}`}>
       
-      {/* 
-        Checkbox controlado
-        - checked depende del estado de la tarea (done)
-        - onChange notifica al padre qué tarea cambiar
-      */}
+     
       <input
         type="checkbox"
         checked={tarea.is_done}
